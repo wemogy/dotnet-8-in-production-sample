@@ -1,10 +1,13 @@
 using System.Reflection;
+using Demo.Api.HealthChecks;
+using Demo.Api.Repositories;
+using Wemogy.CQRS;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
+builder.Services.AddSingleton<TodoRepository>();
 
 // Swagger
 var x = $"{Assembly.GetCallingAssembly().GetName().Name}.xml";
@@ -15,13 +18,14 @@ builder.Services.AddSwaggerGen(c =>
 
     // Include XML comments to Swagger documentation
     c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, x));
+// Setup CQRS
+builder.Services.AddCQRS();
 
-    // Remove trailing "Dto" from schema names
-    c.CustomSchemaIds(x => x.Name[..x.Name.LastIndexOf("Dto")]);
+// Setup HealthChecks
+builder.Services.AddHealthChecks()
+    .AddCheck<MyCustomHealthCheck>("MyCustomHealthCheck");
 
-    // Add Operation ID based on controller method name and remove trailing "Async"
-    c.CustomOperationIds(e => $"{e.ActionDescriptor.RouteValues["action"]}"[..$"{e.ActionDescriptor.RouteValues["action"]}".LastIndexOf("Async")]);
-});
+// Swagger
 
 // Skip rest of setup, if app is executed in context of dotnet-swagger
 if (Assembly.GetEntryAssembly()?.FullName?.Contains("dotnet-swagger") == true)
@@ -43,5 +47,8 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Add health checks endpoint
+app.MapHealthChecks("/healthz");
 
 app.Run();
