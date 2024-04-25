@@ -1,5 +1,5 @@
-using System.ComponentModel.DataAnnotations;
 using System.Net;
+using Demo.Api.Errors;
 
 namespace Demo.Api.Middlewares;
 
@@ -12,10 +12,16 @@ public class ErrorHandlerMiddleware(RequestDelegate next)
         {
             await next(context);
         }
-        catch (ValidationException exception)
+        catch (ValidationErrorException exception)
         {
             var response = context.Response;
             response.StatusCode = (int)HttpStatusCode.BadRequest;
+            await response.WriteAsJsonAsync(exception.Message);
+        }
+        catch (AuthorizationErrorException exception)
+        {
+            var response = context.Response;
+            response.StatusCode = (int)HttpStatusCode.Forbidden;
             await response.WriteAsJsonAsync(exception.Message);
         }
     }
