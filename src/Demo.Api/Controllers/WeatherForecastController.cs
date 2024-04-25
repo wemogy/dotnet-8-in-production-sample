@@ -1,4 +1,5 @@
 using System.Net.Mime;
+using Demo.Api.Errors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Demo.Api.Controllers;
@@ -26,8 +27,23 @@ public class WeatherForecastController : ControllerBase
     [HttpGet(Name = "GetWeatherForecast")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Produces(MediaTypeNames.Application.Json)]
-    public IEnumerable<WeatherForecast> Get()
+    public IEnumerable<WeatherForecast> Get([FromQuery] string city)
     {
+        if (city == "London")
+        {
+            throw Error.NotFound(
+                "CityNotFound",
+                $"The city {city} was not found");
+        }
+
+        // generate weather forecast
+        return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            {
+                Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+                TemperatureC = Random.Shared.Next(-20, 55),
+                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
+            })
+            .ToArray();
         return Enumerable.Range(1, 5).Select(index => new WeatherForecast
         {
             Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
