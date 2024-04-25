@@ -33,8 +33,13 @@ public class TodoController
     [HttpPost]
     public async Task<ActionResult<TodoDto>> CreateTodo([FromBody] CreateTodoRequest request)
     {
+        // Map the request (DTO) to the command (Model)
         var command = request.Adapt<CreateTodoCommand>();
+
+        // Run the command
         var result = await _commands.RunAsync(command);
+
+        // Map the result (Model) to the response (DTO)
         var dto = result.Adapt<TodoDto>();
         return new OkObjectResult(dto)
         {
