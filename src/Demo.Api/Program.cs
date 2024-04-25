@@ -1,10 +1,13 @@
 using System.Reflection;
+using Demo.Api.HealthChecks;
+using Demo.Api.Repositories;
+using Wemogy.CQRS;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
+builder.Services.AddSingleton<TodoRepository>();
 
 // Swagger
 var x = $"{Assembly.GetCallingAssembly().GetName().Name}.xml";
@@ -31,6 +34,17 @@ if (Assembly.GetEntryAssembly()?.FullName?.Contains("dotnet-swagger") == true)
     return;
 }
 
+// Setup CQRS
+builder.Services.AddCQRS();
+
+// Setup HealthChecks
+builder.Services.AddHealthChecks()
+    .AddCheck<MyCustomHealthCheck>("MyCustomHealthCheck");
+
+
+
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -45,5 +59,8 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Add health checks endpoint
+app.MapHealthChecks("/healthz");
 
 app.Run();
