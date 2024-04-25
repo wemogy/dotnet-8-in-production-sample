@@ -1,14 +1,8 @@
 namespace Demo.Api.Errors;
 
-public class ErrorExceptionBase : Exception
+public class ErrorExceptionBase(string code, string message = "") : Exception
 {
-    public string Code { get; set; }
+    public string Code { get; set; } = code;
 
-    public string Message { get; set; }
-
-    public ErrorExceptionBase(string code, string message = "")
-    {
-        Code = code;
-        Message = message;
-    }
+    public string Message { get; set; } = message;
 }
