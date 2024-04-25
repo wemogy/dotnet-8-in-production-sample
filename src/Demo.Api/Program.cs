@@ -16,11 +16,13 @@ builder.Services.AddSwaggerGen(c =>
     // Include XML comments to Swagger documentation
     c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, x));
 
-    // Remove trailing "Dto" from schema names
-    c.CustomSchemaIds(x => x.Name[..x.Name.LastIndexOf("Dto")]);
+    // Remove trailing "Dto" from schema names if present
+    c.CustomSchemaIds(x => x.Name.EndsWith("Dto") ? x.Name[..x.Name.LastIndexOf("Dto")] : x.Name);
 
-    // Add Operation ID based on controller method name and remove trailing "Async"
-    c.CustomOperationIds(e => $"{e.ActionDescriptor.RouteValues["action"]}"[..$"{e.ActionDescriptor.RouteValues["action"]}".LastIndexOf("Async")]);
+    // Add Operation ID based on controller method name and remove trailing "Async" if present
+    c.CustomOperationIds(e => e.ActionDescriptor.RouteValues["action"].EndsWith("Async")
+        ? $"{e.ActionDescriptor.RouteValues["action"]}"[..$"{e.ActionDescriptor.RouteValues["action"]}".LastIndexOf("Async")]
+        : e.ActionDescriptor.RouteValues["action"]);
 });
 
 // Skip rest of setup, if app is executed in context of dotnet-swagger

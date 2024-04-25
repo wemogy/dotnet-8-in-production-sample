@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Demo.Api.Controllers;
@@ -18,7 +19,13 @@ public class WeatherForecastController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Query the weather forecast
+    /// </summary>
+    /// <returns>A list of <see cref="WeatherForecast"/></returns>
     [HttpGet(Name = "GetWeatherForecast")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Produces(MediaTypeNames.Application.Json)]
     public IEnumerable<WeatherForecast> Get()
     {
         return Enumerable.Range(1, 5).Select(index => new WeatherForecast

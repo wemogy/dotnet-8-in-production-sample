@@ -17,8 +17,9 @@
 
   <!-- Generate swagger.json file after each build -->
   <!-- <PropertyGroup Condition=" '$(RunConfiguration)' == 'Wemogy.SpaceBlocks.Api' " /> -->
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+
+  <!-- <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="dotnet tool restore" />
-    <Exec Command="dotnet swagger tofile --output $(OutputPath)swagger.json $(OutputPath)\$(AssemblyName).dll v1" EnvironmentVariables="DOTNET_ROLL_FORWARD=LatestMajor" />
-  </Target>
+    <Exec Command="dotnet swagger tofile -output $(OutputPath)swagger.json $(OutputPath)\$(AssemblyName).dll v1" EnvironmentVariables="DOTNET_ROLL_FORWARD=LatestMajor" />
+  </Target> -->
 </Project>
