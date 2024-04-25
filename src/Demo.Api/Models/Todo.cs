@@ -7,4 +7,6 @@ public class Todo
     public string Name { get; set; } = string.Empty;
 
     public bool IsCompleted { get; set; } = false;
+
+    public string CreatedBy { get; set; } = string.Empty;
 }
