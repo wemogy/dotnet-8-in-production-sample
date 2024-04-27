@@ -23,26 +23,27 @@ public class WeatherForecastController : ControllerBase
     /// <summary>
     /// Query the weather forecast
     /// </summary>
+    /// <param name="city">Name of the city for the forecast</param>
     /// <returns>A list of <see cref="WeatherForecast"/></returns>
     [HttpGet(Name = "GetWeatherForecast")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Produces(MediaTypeNames.Application.Json)]
     public IEnumerable<WeatherForecast> Get([FromQuery] string city)
     {
+        Observability.Pings.Add(1);
+        _logger.LogInformation("Getting weather forecast for {city}", city);
+
         if (city == "London")
         {
-            throw Error.NotFound(
-                "CityNotFound",
-                $"The city {city} was not found");
+            throw Error.NotFound("CityNotFound", $"The city {city} was not found");
         }
 
         // generate weather forecast
         return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+        {
+            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            TemperatureC = Random.Shared.Next(-20, 55),
+            Summary = Summaries[Random.Shared.Next(Summaries.Length)]
+        }).ToArray();
     }
 }

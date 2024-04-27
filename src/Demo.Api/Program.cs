@@ -1,9 +1,21 @@
 using System.Reflection;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
+using Demo.Api;
 using Demo.Api.HealthChecks;
 using Demo.Api.Repositories;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Wemogy.CQRS;
+using Observability = Demo.Api.Observability;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddLogging(c => c.ConfigureStandardLogger());
+
+var logger = LoggerFactory.Create(logger => logger.ConfigureStandardLogger()).CreateLogger<Program>();
+logger.LogInformation("Demo Information");
+logger.LogWarning("Demo Warning");
+logger.LogError("Demo Error");
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -34,16 +46,49 @@ if (Assembly.GetEntryAssembly()?.FullName?.Contains("dotnet-swagger") == true)
     return;
 }
 
+// Metrics
+builder.Services.AddOpenTelemetry().WithMetrics(builder =>
+{
+    builder.AddMeter(Observability.Meter.Name);
+
+    builder.AddRuntimeInstrumentation();
+    builder.AddHttpClientInstrumentation();
+    builder.AddAspNetCoreInstrumentation();
+
+    builder.AddPrometheusExporter();
+});
+
+// Traces
+builder.Services.AddOpenTelemetry().WithTracing(builder =>
+{
+    builder.AddSource(Observability.ServiceName);
+    builder.ConfigureResource((resource) =>
+    {
+        resource.AddService(Observability.ServiceName, Observability.ServiceVersion);
+    });
+
+    builder.AddAspNetCoreInstrumentation();
+    builder.AddEntityFrameworkCoreInstrumentation();
+
+    // builder.AddOtlpExporter(oltpOptions =>
+    // {
+    //     oltpOptions.Endpoint = new Uri("<JAEGER_ENDPOINT>");
+    // });
+});
+
+// Azure
+// builder.Services.AddOpenTelemetry().UseAzureMonitor(azureMonitorOptions =>
+// {
+//     azureMonitorOptions.ConnectionString = "<APP_INSIGHTS_CONNECTION_STRING>";
+//     azureMonitorOptions.SamplingRatio = 1f;
+// });
+
 // Setup CQRS
 builder.Services.AddCQRS();
 
 // Setup HealthChecks
 builder.Services.AddHealthChecks()
     .AddCheck<MyCustomHealthCheck>("MyCustomHealthCheck");
-
-
-
-
 
 var app = builder.Build();
 

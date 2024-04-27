@@ -13,8 +13,10 @@ public class GetTodosQueryHandler : IQueryHandler<GetTodosQuery, List<Todo>>
         _todoRepository = todoRepository;
     }
 
-    public Task<List<Todo>> HandleAsync(GetTodosQuery query, CancellationToken cancellationToken)
+    public async Task<List<Todo>> HandleAsync(GetTodosQuery query, CancellationToken cancellationToken)
     {
-        return Task.FromResult(_todoRepository.ToList());
+        using var activity = Observability.Default.StartActivity("Getting tasks from database");
+        await Task.Delay(500);
+        return _todoRepository.ToList();
     }
 }
